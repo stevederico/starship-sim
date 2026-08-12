@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -p tsconfig.json && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc -p tsconfig.json"
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "node --experimental-strip-types --test src/constants.photoSpec.test.ts"
   },
   "dependencies": {
     "@react-three/drei": "10.7.8",

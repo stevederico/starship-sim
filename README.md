@@ -20,3 +20,5 @@ Open http://127.0.0.1:5173/
 React 19, Vite, Tailwind v4, Three.js, React Three Fiber.
 
 Ship is 52.1 m × 9 m (Block 2). Earth is cinematic scale so the vehicle stays visible.
+
+Photo-backed visual spec (what the mesh must match): [docs/starship-photo-research.md](docs/starship-photo-research.md).
