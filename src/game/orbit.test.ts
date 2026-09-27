@@ -8,6 +8,8 @@ import {
   orbitCue,
   orbitFuelFrac,
   orbitThrustAccel,
+  orbitWarp,
+  speedToGo,
   stepOrbit
 } from './orbit.ts';
 import type { OrbitState, StagingState } from './orbit.ts';
@@ -22,6 +24,7 @@ function flyCue(from: StagingState): OrbitState {
   while (s.status === 'flying' && s.t < 3000) {
     const cue = orbitCue(s);
     if (cue.action) cutoff(s);
+    else if (s.throttle > 0) s.throttle = cue.throttle;
     stepOrbit(s, pilotInput(cue, s.angle, ORBIT.maxTurnRate, 1.5), ORBIT.step);
   }
   return s;
@@ -78,6 +81,33 @@ describe('ship to orbit', () => {
     s.fuel = ORBIT.prop;
     assert.ok(orbitThrustAccel(s, 1) < ORBIT.maxAccel);
     assert.equal(orbitThrustAccel(s, 0), 0);
+  });
+
+  it('time and throttle ease down as orbital speed gets close', () => {
+    const s = createOrbit(STAGING);
+    assert.equal(orbitWarp(s), ORBIT.warp);
+    assert.equal(orbitCue(s).throttle, 1);
+    s.vx = circularSpeed(ORBIT.targetAlt) - 100;
+    s.y = ORBIT.targetAlt;
+    s.vy = 0;
+    assert.equal(orbitWarp(s), ORBIT.warpFinal);
+    assert.ok(Math.abs(speedToGo(s) - 100) < 1e-6);
+    const late = orbitCue(s).throttle;
+    assert.ok(late > 0.12 && late < 0.3, `throttle ${late}`);
+  });
+
+  it('a cutoff one second late still lands a usable orbit', () => {
+    const s = createOrbit(STAGING);
+    let late = 0;
+    while (s.status === 'flying' && s.t < 3000) {
+      const cue = orbitCue(s);
+      if (cue.action) late += ORBIT.step;
+      if (late >= orbitWarp(s)) cutoff(s);
+      else if (s.throttle > 0 && !cue.action) s.throttle = cue.throttle;
+      stepOrbit(s, pilotInput(cue, s.angle, ORBIT.maxTurnRate, 1.5), ORBIT.step);
+    }
+    assert.equal(s.status, 'orbit');
+    assert.ok(orbitAccuracy(s) > 0.7, `accuracy ${orbitAccuracy(s)}`);
   });
 
   it('coasting in a closed orbit counts as orbit', () => {

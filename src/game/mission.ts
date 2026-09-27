@@ -10,7 +10,16 @@ import {
 import type { AscentState } from './ascent.ts';
 import { CATCH, catchCue, catchPrecision, createCatch, stepCatch } from './catch.ts';
 import type { CatchState } from './catch.ts';
-import { ORBIT, createOrbit, cutoff, orbitAccuracy, orbitCue, orbitFuelFrac, stepOrbit } from './orbit.ts';
+import {
+  ORBIT,
+  createOrbit,
+  cutoff,
+  orbitAccuracy,
+  orbitCue,
+  orbitFuelFrac,
+  orbitWarp,
+  stepOrbit
+} from './orbit.ts';
 import type { OrbitState, StagingState } from './orbit.ts';
 import { clamp, seededRandom } from './physics.ts';
 import { pilotInput } from './pilot.ts';
@@ -317,7 +326,7 @@ export class Mission {
       s.throttle = this.applyThrottle(s.throttle, flown, dt);
     }
 
-    this.runSteps(dt, ORBIT.warp, ORBIT.step, () => {
+    this.runSteps(dt, orbitWarp(s), ORBIT.step, () => {
       stepOrbit(s, flown, ORBIT.step);
       return s.status === 'flying';
     });

@@ -5,6 +5,10 @@
   --color-foreground: #e8eef2;
   --color-muted: #94a3b8;
   --color-accent: #7dd3fc;
+  --color-hot: #ff6308;
+  --color-good: #4ade80;
+  --color-warn: #fbbf24;
+  --color-bad: #f87171;
   --color-panel: rgb(5 7 10 / 0.62);
   --font-sans: ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -23,6 +27,41 @@ body,
 
 body {
   overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.banner {
+  animation: banner 2.8s ease-out forwards;
+}
+
+.flash {
+  animation: flash 0.9s ease-out forwards;
+}
+
+@keyframes banner {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  10%,
+  80% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes flash {
+  0% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -32,5 +71,14 @@ body {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  /* Banners stay readable until the app removes them. */
+  .banner {
+    animation: none !important;
+  }
+
+  .flash {
+    display: none;
   }
 }

@@ -14,6 +14,8 @@ import type { Cue, FlightInput } from './types.ts';
 /** Ship burn from stage separation to orbit. */
 export const ORBIT = {
   warp: 5,
+  /** Time slows to this near cutoff so the last call is a fair one. */
+  warpFinal: 2,
   step: 0.05,
   dry: 130_000,
   prop: 1_500_000,
@@ -87,12 +89,23 @@ export function isOrbitClosed(el: OrbitElements): boolean {
   return el.periapsis >= ORBIT.minPeriapsis && Number.isFinite(el.apoapsis);
 }
 
+/** Horizontal speed still missing for the target orbit, m/s. */
+export function speedToGo(s: OrbitState): number {
+  return Math.max(0, Math.sqrt(MU / (EARTH_RADIUS_M + ORBIT.targetAlt)) - s.vx);
+}
+
+/** Sim seconds per real second. Eases down as orbital speed gets close. */
+export function orbitWarp(s: OrbitState): number {
+  const t = clamp((speedToGo(s) - 150) / 350, 0, 1);
+  return ORBIT.warpFinal + (ORBIT.warp - ORBIT.warpFinal) * t;
+}
+
 /** 0..1 closeness of the final orbit to the circular target. */
 export function orbitAccuracy(s: OrbitState): number {
   if (!Number.isFinite(s.apoapsis)) return 0;
   const error =
     Math.abs(s.apoapsis - ORBIT.targetAlt) + Math.abs(s.periapsis - ORBIT.targetAlt);
-  return clamp(1 - error / 150_000, 0, 1);
+  return clamp(1 - error / 200_000, 0, 1);
 }
 
 /** Explicit guidance: reach target altitude with zero climb rate at burnout. */
@@ -101,18 +114,19 @@ export function orbitCue(s: OrbitState): Cue {
   const gEff = MU / (r * r) - (s.vx * s.vx) / r;
   const mass = ORBIT.dry + s.fuel;
   const vExhaust = ORBIT.isp * G0;
-  const vTarget = Math.sqrt(MU / (EARTH_RADIUS_M + ORBIT.targetAlt));
-  const dv = Math.max(0, vTarget - s.vx);
+  const dv = speedToGo(s);
   const mdot = ORBIT.thrust / vExhaust;
   const tgo = Math.max(18, (mass / mdot) * (1 - Math.exp(-dv / vExhaust)));
   const netUp = (6 * (ORBIT.targetAlt - s.y) - 4 * s.vy * tgo) / (tgo * tgo);
-  const aFull = orbitThrustAccel(s, 1) || 1;
+  const aFull = orbitThrustAccel(s, Math.max(s.throttle, 0.12)) || 1;
   const sinElev = clamp((netUp + gEff) / aFull, -0.45, 0.8);
   const sma = (s.apoapsis + s.periapsis) / 2;
   const done = Number.isFinite(sma) && sma >= ORBIT.targetAlt;
+  // Throttle back for the last stretch so cutoff is not a twitch test.
+  const terminal = 0.12 + 0.88 * clamp((dv - 60) / 340, 0, 1);
   return {
     angle: Math.PI / 2 - Math.asin(sinElev),
-    throttle: done ? 0 : 1,
+    throttle: done ? 0 : terminal,
     action: done && s.throttle > 0
   };
 }
