@@ -25,6 +25,9 @@ export const CATCH = {
   levelGain: 1.6,
   towerEdgeX: -9.5,
   towerHeight: 150,
+  /** Ground sits below the launch mount, which tops out at y = 0. */
+  groundY: -18,
+  mountHalfWidth: 10,
   startY: 2000,
   startVy: -170,
   startX: 220,
@@ -87,6 +90,19 @@ export function catchWindAccel(s: CatchState): number {
   // Wind fades near the tower so the last meters are about the pilot.
   const height = clamp((s.y - CATCH.catchY) / 300, 0.25, 1);
   return (s.wind + 0.35 * Math.sin(s.t * 0.9 + s.gustPhase)) * height;
+}
+
+/** Height of whatever is under the booster: mount top or open ground. */
+export function catchFloor(x: number): number {
+  return Math.abs(x) < CATCH.mountHalfWidth ? 0 : CATCH.groundY;
+}
+
+/** Seconds of coast left before the suggested landing burn. Zero means burn now. */
+export function burnMargin(s: CatchState): number {
+  if (s.vy >= -1) return 0;
+  const decel = 0.62 * (CATCH.maxAccel - G0);
+  const room = s.y - CATCH.catchY - 8 - (s.vy * s.vy) / (2 * decel);
+  return Math.max(0, room / -s.vy);
 }
 
 /** True when the booster sits inside the arms slowly and upright enough. */
@@ -165,8 +181,8 @@ export function stepCatch(s: CatchState, input: FlightInput, dt: number): void {
     s.status = 'caught';
   } else if (s.y < CATCH.towerHeight && s.x < CATCH.towerEdgeX && s.x > -40) {
     s.status = 'tower';
-  } else if (s.y <= 0) {
-    s.y = 0;
+  } else if (s.y <= catchFloor(s.x)) {
+    s.y = catchFloor(s.x);
     s.status = 'crash';
   }
 }

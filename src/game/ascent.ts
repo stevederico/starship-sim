@@ -37,6 +37,9 @@ export const ASCENT = {
   stageForcedFrac: 0.04,
   towerEdgeX: -9.5,
   towerHeight: 150,
+  /** Ground sits below the launch mount, which tops out at y = 0. */
+  groundY: -18,
+  mountHalfWidth: 10,
   /** Pitch program: tilt reached at the top of the turn. */
   cueMaxTilt: 60 * DEG,
   cueStartAlt: 350,
@@ -103,6 +106,11 @@ export function ascentMass(s: AscentState): number {
 
 export function canStage(s: AscentState): boolean {
   return s.status === 'flying' && ascentFuelFrac(s) <= ASCENT.stageOpenFrac;
+}
+
+/** Height of whatever is under the stack: mount top or open ground. */
+export function ascentFloor(x: number): number {
+  return Math.abs(x) < ASCENT.mountHalfWidth ? 0 : ASCENT.groundY;
 }
 
 /** Pitch program tilt for an altitude. */
@@ -186,8 +194,8 @@ export function stepAscent(s: AscentState, input: FlightInput, dt: number): void
     s.status = 'breakup';
   } else if (s.y < ASCENT.towerHeight && s.x < ASCENT.towerEdgeX) {
     s.status = 'tower';
-  } else if (s.y <= 0 && s.vy < 0) {
-    s.y = 0;
+  } else if (s.y <= ascentFloor(s.x) && s.vy < 0) {
+    s.y = ascentFloor(s.x);
     s.status = 'crash';
   } else if (ascentFuelFrac(s) <= ASCENT.stageForcedFrac) {
     s.status = 'staged';

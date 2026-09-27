@@ -2,7 +2,9 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   CATCH,
+  burnMargin,
   catchCue,
+  catchFloor,
   catchFuelForReserve,
   catchPrecision,
   createCatch,
@@ -60,7 +62,22 @@ describe('booster catch', () => {
     const s = createCatch(0.1, seededRandom(3));
     while (s.status === 'flying' && s.t < 120) stepCatch(s, NO_INPUT, CATCH.step);
     assert.equal(s.status, 'crash');
-    assert.equal(s.y, 0);
+    assert.equal(s.y, catchFloor(s.x));
+  });
+
+  it('the mount stands above the open ground', () => {
+    assert.equal(catchFloor(0), 0);
+    assert.equal(catchFloor(80), CATCH.groundY);
+  });
+
+  it('burn margin counts down to the suggested ignition', () => {
+    const s = createCatch(0.1, seededRandom(3));
+    const start = burnMargin(s);
+    assert.ok(start > 1 && start < 8, `margin ${start}`);
+    while (s.status === 'flying' && burnMargin(s) > 0) stepCatch(s, NO_INPUT, CATCH.step);
+    assert.equal(s.status, 'flying');
+    assert.ok(Math.abs(s.t - start) < 1.5, 'ignition lands near the first estimate');
+    assert.equal(burnMargin({ ...s, vy: 0 }), 0);
   });
 
   it('running dry leaves the booster falling', () => {

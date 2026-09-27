@@ -63,6 +63,11 @@ export const TIMING = {
 
 const NO_CUE: Cue = { angle: 0, throttle: 0, action: false };
 
+/** Reads status fresh after sim steps, which change it behind the type checker. */
+function statusOf<T extends { status: string }>(state: T): T['status'] {
+  return state.status;
+}
+
 /** Whole flight as a state machine. View code reads fields, never writes them. */
 export class Mission {
   phase: Phase = 'title';
@@ -230,10 +235,11 @@ export class Mission {
       this.emit('stage-ready', 'Staging window open');
     }
 
-    if (s.status === 'staged') this.onStaged();
-    else if (s.status === 'breakup') this.emit('explode', 'Airframe breakup');
-    else if (s.status === 'tower') this.emit('explode', 'Tower strike');
-    else if (s.status === 'crash') this.emit('explode', 'Ground impact');
+    const after = statusOf(s);
+    if (after === 'staged') this.onStaged();
+    else if (after === 'breakup') this.emit('explode', 'Airframe breakup');
+    else if (after === 'tower') this.emit('explode', 'Tower strike');
+    else if (after === 'crash') this.emit('explode', 'Ground impact');
   }
 
   private onStaged(): void {
@@ -279,9 +285,10 @@ export class Mission {
       return s.status === 'flying';
     });
 
-    if (s.status === 'caught') this.emit('caught', 'Booster caught');
-    else if (s.status === 'tower') this.emit('explode', 'Tower strike');
-    else if (s.status === 'crash') this.emit('explode', 'Booster lost');
+    const after = statusOf(s);
+    if (after === 'caught') this.emit('caught', 'Booster caught');
+    else if (after === 'tower') this.emit('explode', 'Tower strike');
+    else if (after === 'crash') this.emit('explode', 'Booster lost');
   }
 
   private beginOrbit(): void {
@@ -315,8 +322,9 @@ export class Mission {
       return s.status === 'flying';
     });
 
-    if (s.status === 'orbit') this.emit('orbit', 'Orbit achieved');
-    else if (s.status === 'reentry') this.emit('reentry', 'Ship lost on reentry');
+    const after = statusOf(s);
+    if (after === 'orbit') this.emit('orbit', 'Orbit achieved');
+    else if (after === 'reentry') this.emit('reentry', 'Ship lost on reentry');
   }
 
   record(): MissionRecord {
