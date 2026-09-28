@@ -143,19 +143,22 @@ export default function App() {
   const toTitle = useCallback(() => {
     mission.toTitle();
     controls.release();
+    sound.resume();
     pausedRef.current = false;
     setPaused(false);
     setBanner(null);
     setPhase('title');
     setView('title');
-  }, [controls, mission]);
+  }, [controls, mission, sound]);
 
   const togglePause = useCallback(() => {
     if (mission.phase === 'title' || mission.phase === 'results') return;
     pausedRef.current = !pausedRef.current;
     setPaused(pausedRef.current);
     controls.release();
-  }, [controls, mission]);
+    if (pausedRef.current) sound.suspend();
+    else if (!document.hidden) sound.resume();
+  }, [controls, mission, sound]);
 
   const toggleMute = useCallback(() => {
     setMuted((was) => {
@@ -259,7 +262,13 @@ export default function App() {
   useEffect(() => {
     const onTouch = () => setTouch(true);
     const onHide = () => {
-      if (document.hidden && !pausedRef.current) togglePause();
+      if (document.hidden) {
+        sound.suspend();
+        if (!pausedRef.current) togglePause();
+      } else if (!pausedRef.current) {
+        // Title and results never pause, so bring their sound straight back.
+        sound.resume();
+      }
     };
     window.addEventListener('touchstart', onTouch, { once: true, passive: true });
     document.addEventListener('visibilitychange', onHide);
@@ -267,7 +276,7 @@ export default function App() {
       window.removeEventListener('touchstart', onTouch);
       document.removeEventListener('visibilitychange', onHide);
     };
-  }, [togglePause]);
+  }, [sound, togglePause]);
 
   useEffect(() => {
     if (params.has('demo')) start(true);

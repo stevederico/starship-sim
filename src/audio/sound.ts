@@ -55,6 +55,15 @@ export class Sound {
     wind.connect(windFilter).connect(this.windGain).connect(this.master);
   }
 
+  /** Stops the audio clock: no engine drone while paused or in a hidden tab. */
+  suspend(): void {
+    if (this.ctx?.state === 'running') void this.ctx.suspend();
+  }
+
+  resume(): void {
+    if (this.ctx?.state === 'suspended') void this.ctx.resume();
+  }
+
   setMuted(muted: boolean): void {
     this.muted = muted;
     if (this.ctx && this.master) {
