@@ -75,10 +75,11 @@ describe('scoring', () => {
 
   it('ranks follow the thresholds', () => {
     assert.equal(rankFor(10_000), 'S');
-    assert.equal(rankFor(8999), 'A');
-    assert.equal(rankFor(7499), 'B');
-    assert.equal(rankFor(5999), 'C');
-    assert.equal(rankFor(3999), 'D');
-    assert.equal(rankFor(1999), 'F');
+    assert.equal(rankFor(9100), 'S');
+    assert.equal(rankFor(9099), 'A');
+    assert.equal(rankFor(7999), 'B');
+    assert.equal(rankFor(6499), 'C');
+    assert.equal(rankFor(4499), 'D');
+    assert.equal(rankFor(2499), 'F');
   });
 });

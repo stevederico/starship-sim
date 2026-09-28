@@ -39,7 +39,7 @@ describe('mission', () => {
     assert.deepEqual(types, ['ignition', 'liftoff']);
   });
 
-  it('demo pilot flies the whole mission to a top rank', () => {
+  it('demo pilot flies the whole mission to rank A, leaving S for a human', () => {
     const mission = new Mission();
     mission.autopilot = true;
     mission.start(11);
@@ -60,6 +60,7 @@ describe('mission', () => {
     assert.equal(score.caught, true);
     assert.equal(score.inOrbit, true);
     assert.ok(score.total >= 8500, `total ${score.total}`);
+    assert.equal(score.rank, 'A');
     assert.ok(result.seconds < 240, `mission took ${result.seconds}s`);
   });
 

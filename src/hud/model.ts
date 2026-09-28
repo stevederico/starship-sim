@@ -1,5 +1,5 @@
 import { ASCENT, ascentFuelFrac, canStage } from '../game/ascent.ts';
-import { CATCH, burnMargin } from '../game/catch.ts';
+import { CATCH, burnMargin, targetDescent } from '../game/catch.ts';
 import type { Mission, Phase } from '../game/mission.ts';
 import { ORBIT, coastLeft, orbitFuelFrac } from '../game/orbit.ts';
 import { circularSpeed, clamp } from '../game/physics.ts';
@@ -40,7 +40,8 @@ export interface HudModel {
   /** Direction of travel from vertical, or null when too slow to matter. */
   prograde: number | null;
   throttle: number;
-  throttleCue: number;
+  /** Suggested throttle tick. Null once max-Q is behind: from there it is on the pilot. */
+  throttleCue: number | null;
   prompt: string | null;
   promptTone: Tone;
   actionLabel: string | null;
@@ -88,6 +89,18 @@ function percent(value: number): string {
   return `${Math.round(clamp(value, 0, 1) * 100)}%`;
 }
 
+function throttleHint(mission: Mission): number | null {
+  return mission.ascent.passedMaxQ ? null : mission.cue.throttle;
+}
+
+/** How far descent speed is off the planned profile, as a tone. */
+function descentTone(descent: number, target: number): Tone {
+  const over = descent - target;
+  if (over > 12) return 'bad';
+  if (over > 5 || over < -10) return 'warn';
+  return 'ok';
+}
+
 function base(mission: Mission): HudModel {
   return {
     phase: mission.phase,
@@ -125,7 +138,7 @@ function ascentModel(mission: Mission): HudModel {
   hud.cueAngle = mission.cue.angle;
   hud.prograde = speed > 40 ? Math.atan2(s.vx, s.vy) : null;
   hud.throttle = s.throttle;
-  hud.throttleCue = mission.cue.throttle;
+  hud.throttleCue = throttleHint(mission);
   hud.readouts = [
     { label: 'Altitude', value: formatKm(s.y), unit: 'km', tone: 'ok' },
     { label: 'Speed', value: Math.round(speed).toLocaleString('en-US'), unit: 'm/s', tone: 'ok' },
@@ -188,6 +201,7 @@ function catchModel(mission: Mission): HudModel {
   const fuel = s.fuel / s.fuelStart;
   const speed = Math.hypot(s.vx, s.vy);
   const near = dy < 150;
+  const target = targetDescent(s);
 
   hud.clock = formatClock(mission.ascent.t + 240 + s.t);
   hud.flying = s.status === 'flying' && !mission.inIntro;
@@ -195,7 +209,7 @@ function catchModel(mission: Mission): HudModel {
   hud.cueAngle = mission.cue.angle;
   hud.prograde = null;
   hud.throttle = s.throttle;
-  hud.throttleCue = mission.cue.throttle;
+  hud.throttleCue = throttleHint(mission);
   hud.card = mission.inIntro ? CATCH_CARD : null;
 
   const side = s.x > 0.5 ? 'R' : s.x < -0.5 ? 'L' : '';
@@ -205,7 +219,7 @@ function catchModel(mission: Mission): HudModel {
       label: 'Descent',
       value: (-s.vy).toFixed(0),
       unit: 'm/s',
-      tone: !near ? 'ok' : -s.vy <= CATCH.tolVyDown ? 'ok' : -s.vy > 30 ? 'bad' : 'warn'
+      tone: s.throttle > 0.05 || near ? descentTone(-s.vy, target) : 'ok'
     },
     {
       label: 'Offset',
@@ -242,10 +256,12 @@ function catchModel(mission: Mission): HudModel {
     hud.prompt = 'Below the arms. Climb back up';
     hud.promptTone = 'bad';
   } else if (near) {
-    hud.prompt = 'Ease into the arms. Slow and upright';
+    hud.prompt = `Ease in at ${Math.max(1, Math.round(target))} m/s. Stay upright`;
+    hud.promptTone = descentTone(-s.vy, target);
     hud.promptTone = 'ok';
   } else {
-    hud.prompt = 'Match the throttle mark. Steer to the beam';
+    hud.prompt = `Slow to ${Math.round(target)} m/s. Steer to the beam`;
+    hud.promptTone = descentTone(-s.vy, target);
   }
   return hud;
 }
@@ -264,7 +280,7 @@ function orbitModel(mission: Mission): HudModel {
   hud.cueAngle = mission.cue.angle;
   hud.prograde = Math.atan2(s.vx, s.vy);
   hud.throttle = s.throttle;
-  hud.throttleCue = mission.cue.throttle;
+  hud.throttleCue = throttleHint(mission);
   hud.card = mission.inIntro ? ORBIT_CARD : null;
   hud.readouts = [
     { label: 'Altitude', value: formatKm(s.y), unit: 'km', tone: 'ok' },

@@ -84,6 +84,25 @@ describe('hud model', () => {
     assert.equal(hud.readouts.length, 4);
   });
 
+  it('the throttle tick disappears once max-Q is behind', () => {
+    const mission = demo(4);
+    flyTo(mission, 'ascent', 5);
+    assert.equal(typeof hudModel(mission).throttleCue, 'number');
+    while (!mission.ascent.passedMaxQ) mission.update(FRAME, NO_INPUT);
+    const hud = hudModel(mission);
+    assert.equal(hud.throttleCue, null);
+    assert.equal(typeof hud.cueAngle, 'number');
+    flyTo(mission, 'catch', 12);
+    assert.equal(hudModel(mission).throttleCue, null);
+  });
+
+  it('the catch gives a target descent speed instead of a throttle mark', () => {
+    const mission = demo(4);
+    flyTo(mission, 'catch', 14);
+    const hud = hudModel(mission);
+    assert.match(hud.prompt ?? '', /Slow to \d+ m\/s|Ease in at \d+ m\/s/);
+  });
+
   it('orbit prompts cutoff once the orbit closes', () => {
     const mission = demo(4);
     flyTo(mission, 'orbit', 3);

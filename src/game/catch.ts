@@ -15,15 +15,17 @@ export const CATCH = {
   /** Booster base height when its pins sit on the arms. */
   catchY: 46,
   boosterLength: 70,
-  tolX: 6,
+  tolX: 4,
   tolY: 5,
   tolVx: 5,
-  tolVyDown: 8,
+  tolVyDown: 5,
   tolVyUp: 3,
   tolAngle: 10 * DEG,
   /** Hands off the stick, the booster rights itself at this gain, 1/s. */
   levelGain: 1.6,
   towerEdgeX: -9.5,
+  /** Guidance holds this far downrange of the line until the final meters. */
+  approachOffset: 3,
   towerHeight: 150,
   /** Ground sits below the launch mount, which tops out at y = 0. */
   groundY: -18,
@@ -37,6 +39,9 @@ export const CATCH = {
   fuelMax: 900,
   fuelPerReserve: 4000
 } as const;
+
+/** Braking the guidance plans on: a share of the net upward thrust. */
+const PLAN_DECEL = 0.62 * (CATCH.maxAccel - G0);
 
 export type CatchStatus = 'flying' | 'caught' | 'crash' | 'tower';
 
@@ -100,8 +105,7 @@ export function catchFloor(x: number): number {
 /** Seconds of coast left before the suggested landing burn. Zero means burn now. */
 export function burnMargin(s: CatchState): number {
   if (s.vy >= -1) return 0;
-  const decel = 0.62 * (CATCH.maxAccel - G0);
-  const room = s.y - CATCH.catchY - 8 - (s.vy * s.vy) / (2 * decel);
+  const room = s.y - CATCH.catchY - 8 - (s.vy * s.vy) / (2 * PLAN_DECEL);
   return Math.max(0, room / -s.vy);
 }
 
@@ -129,20 +133,34 @@ export function catchPrecision(s: CatchState): number {
   return sum / parts.length;
 }
 
+/** Vertical speed guidance wants at this height. Negative is down. */
+function plannedVy(s: CatchState): number {
+  const dy = s.y - CATCH.catchY;
+  // Below the arms the only way in is back up.
+  if (dy < -1) return 2;
+  return -Math.sqrt(2 * PLAN_DECEL * Math.max(0, dy - 8)) - 2.5;
+}
+
+/** Descent speed to aim for right now, m/s. Zero or less means climb. */
+export function targetDescent(s: CatchState): number {
+  return -plannedVy(s);
+}
+
 export function catchCue(s: CatchState): Cue {
   const dy = s.y - CATCH.catchY;
-  const netMax = CATCH.maxAccel - G0;
-  const decel = 0.62 * netMax;
-  // Below the arms the only way in is back up.
-  const vyDes = dy < -1 ? 2 : -Math.sqrt(2 * decel * Math.max(0, dy - 8)) - 2.5;
+  const vyDes = plannedVy(s);
   const onProfile = s.vy <= vyDes + 6;
   let ayCmd = G0 + (vyDes - s.vy) * 1.6;
-  if (onProfile && dy > 12) ayCmd += decel;
+  if (onProfile && dy > 12) ayCmd += PLAN_DECEL;
 
+  // Aim a little to the open side while high, so an overshoot swings away
+  // from the tower, then slide onto the line for the last meters.
+  const aimX = CATCH.approachOffset * clamp((dy - 15) / 60, 0, 1);
+  const off = s.x - aimX;
   // Close the gap no faster than a gentle sideways brake can stop.
-  const gap = Math.abs(s.x);
+  const gap = Math.abs(off);
   const closing = Math.min(Math.sqrt(2 * 2.5 * gap), gap / 2.5, 40);
-  const vxDes = -Math.sign(s.x) * closing;
+  const vxDes = -Math.sign(off) * closing;
   const axCmd = (vxDes - s.vx) * 0.9 - catchWindAccel(s);
 
   if (ayCmd < 0.3 * CATCH.maxAccel && dy > 60) {

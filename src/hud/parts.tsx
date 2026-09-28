@@ -114,7 +114,8 @@ export function AttitudeDial({ angle, cue, prograde }: DialProps) {
 
 interface ThrottleProps {
   value: number;
-  cue: number;
+  /** Suggested setting, or null to hide the tick. */
+  cue: number | null;
   /** Called with 0..1 while the player drags. Omit for a read-only gauge. */
   onSet?: (value: number) => void;
   tall?: boolean;
@@ -152,10 +153,12 @@ export function Throttle({ value, cue, onSet, tall = false }: ThrottleProps) {
         }}
       >
         <div className="absolute inset-x-0 bottom-0 bg-hot/80" style={{ height: `${value * 100}%` }} />
-        <div
-          className="absolute -inset-x-1.5 h-0.5 bg-accent"
-          style={{ bottom: `${cue * 100}%` }}
-        />
+        {cue !== null ? (
+          <div
+            className="absolute -inset-x-1.5 h-0.5 bg-accent"
+            style={{ bottom: `${cue * 100}%` }}
+          />
+        ) : null}
       </div>
       <span className="font-mono text-[9px] tracking-[0.16em] text-muted uppercase">Throttle</span>
     </div>

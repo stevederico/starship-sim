@@ -60,12 +60,20 @@ const SHIP_FUEL_MAX = 2000;
 const CATCH_BASE = 2000;
 const CATCH_PRECISION_MAX = 2000;
 
+/**
+ * Rank floors. Guidance flying alone lands around 8,800, so S means beating it:
+ * a centered hover catch and tight fuel. A clean first flight reaches A.
+ */
+export const RANK_FLOORS: readonly [Rank, number][] = [
+  ['S', 9100],
+  ['A', 8000],
+  ['B', 6500],
+  ['C', 4500],
+  ['D', 2500]
+];
+
 export function rankFor(total: number): Rank {
-  if (total >= 9000) return 'S';
-  if (total >= 7500) return 'A';
-  if (total >= 6000) return 'B';
-  if (total >= 4000) return 'C';
-  if (total >= 2000) return 'D';
+  for (const [rank, floor] of RANK_FLOORS) if (total >= floor) return rank;
   return 'F';
 }
 
