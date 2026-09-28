@@ -27,11 +27,16 @@ export const ORBIT = {
   targetAlt: 150_000,
   minPeriapsis: 100_000,
   reentryAlt: 45_000,
+  /** Real seconds of engines-off coasting on an open trajectory before the ship is written off. */
+  coastLimit: 10,
   maxTurnRate: 2.4 * DEG,
   turnTau: 0.4
 } as const;
 
 export type OrbitStatus = 'flying' | 'orbit' | 'reentry';
+
+/** Why the ship was lost: fell back in, ran dry, or coasted with the orbit open. */
+export type OrbitLoss = 'fall' | 'fuel' | 'coast';
 
 export interface OrbitState {
   t: number;
@@ -46,6 +51,9 @@ export interface OrbitState {
   fuel: number;
   apoapsis: number;
   periapsis: number;
+  /** Real seconds spent coasting on a trajectory that will not hold orbit. */
+  coast: number;
+  loss: OrbitLoss | null;
   status: OrbitStatus;
 }
 
@@ -71,6 +79,8 @@ export function createOrbit(from: StagingState): OrbitState {
     fuel: ORBIT.prop,
     apoapsis: el.apoapsis,
     periapsis: el.periapsis,
+    coast: 0,
+    loss: null,
     status: 'flying'
   };
 }
@@ -169,11 +179,26 @@ export function stepOrbit(s: OrbitState, input: FlightInput, dt: number): void {
   s.periapsis = el.periapsis;
 
   const coasting = thrustAcc <= 0;
-  if (coasting && isOrbitClosed(el)) {
+  const closed = isOrbitClosed(el);
+  // Counted in real seconds, so the limit feels the same at any time warp.
+  s.coast = coasting && !closed ? s.coast + dt / orbitWarp(s) : 0;
+  if (coasting && closed) {
     s.status = 'orbit';
   } else if (s.y < ORBIT.reentryAlt && s.vy < 0) {
-    s.status = 'reentry';
-  } else if (s.fuel <= 0 && !isOrbitClosed(el)) {
-    s.status = 'reentry';
+    lose(s, 'fall');
+  } else if (s.fuel <= 0 && !closed) {
+    lose(s, 'fuel');
+  } else if (s.coast >= ORBIT.coastLimit) {
+    lose(s, 'coast');
   }
+}
+
+function lose(s: OrbitState, loss: OrbitLoss): void {
+  s.status = 'reentry';
+  s.loss = loss;
+}
+
+/** Real seconds left to relight before an open-orbit coast ends the flight. */
+export function coastLeft(s: OrbitState): number {
+  return Math.max(0, ORBIT.coastLimit - s.coast);
 }

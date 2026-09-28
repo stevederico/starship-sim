@@ -7,6 +7,7 @@ import {
   orbitAccuracy,
   orbitCue,
   orbitFuelFrac,
+  coastLeft,
   orbitThrustAccel,
   orbitWarp,
   speedToGo,
@@ -48,11 +49,13 @@ describe('ship to orbit', () => {
     assert.ok(orbitFuelFrac(late) > orbitFuelFrac(early));
   });
 
-  it('no burn falls back into the atmosphere', () => {
+  it('no burn is written off instead of a long coast', () => {
     const s = createOrbit(STAGING);
     s.throttle = 0;
     while (s.status === 'flying' && s.t < 3000) stepOrbit(s, NO_INPUT, ORBIT.step);
     assert.equal(s.status, 'reentry');
+    assert.equal(s.loss, 'coast');
+    assert.ok(s.t < ORBIT.coastLimit * ORBIT.warp + 1, `coasted ${s.t} sim s`);
   });
 
   it('an early cutoff is not an orbit and the engines can relight', () => {
@@ -67,10 +70,36 @@ describe('ship to orbit', () => {
     assert.ok(s.fuel < fuel);
   });
 
+  it('coasting with the orbit open ends the flight within the coast limit', () => {
+    const s = createOrbit(STAGING);
+    for (let i = 0; i < 400; i++) stepOrbit(s, NO_INPUT, ORBIT.step);
+    cutoff(s);
+    let real = 0;
+    while (s.status === 'flying' && real < 60) {
+      real += ORBIT.step / orbitWarp(s);
+      stepOrbit(s, NO_INPUT, ORBIT.step);
+    }
+    assert.equal(s.status, 'reentry');
+    assert.equal(s.loss, 'coast');
+    assert.ok(Math.abs(real - ORBIT.coastLimit) < 0.2, `ended after ${real} real s`);
+  });
+
+  it('relighting resets the coast clock', () => {
+    const s = createOrbit(STAGING);
+    cutoff(s);
+    for (let i = 0; i < 40; i++) stepOrbit(s, NO_INPUT, ORBIT.step);
+    assert.ok(coastLeft(s) < ORBIT.coastLimit);
+    s.throttle = 1;
+    stepOrbit(s, NO_INPUT, ORBIT.step);
+    assert.equal(coastLeft(s), ORBIT.coastLimit);
+    assert.equal(s.status, 'flying');
+  });
+
   it('burning straight up runs dry without an orbit', () => {
     const s = createOrbit({ ...STAGING, angle: 0 });
     while (s.status === 'flying' && s.t < 3000) stepOrbit(s, NO_INPUT, ORBIT.step);
     assert.equal(s.status, 'reentry');
+    assert.equal(s.loss, 'fuel');
     assert.equal(s.fuel, 0);
   });
 

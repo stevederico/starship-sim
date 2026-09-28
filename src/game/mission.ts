@@ -20,7 +20,7 @@ import {
   orbitWarp,
   stepOrbit
 } from './orbit.ts';
-import type { OrbitState, StagingState } from './orbit.ts';
+import type { OrbitLoss, OrbitState, StagingState } from './orbit.ts';
 import { clamp, seededRandom } from './physics.ts';
 import { pilotInput } from './pilot.ts';
 import { scoreMission } from './scoring.ts';
@@ -69,6 +69,12 @@ export const TIMING = {
   throttlePerSecond: 0.9,
   maxFrame: 0.1
 } as const;
+
+const LOSS_TEXT: Record<OrbitLoss, string> = {
+  fall: 'Ship lost on reentry',
+  fuel: 'Out of propellant. No orbit',
+  coast: 'Orbit never closed. Ship lost'
+};
 
 const NO_CUE: Cue = { angle: 0, throttle: 0, action: false };
 
@@ -334,7 +340,7 @@ export class Mission {
     const after = statusOf(s);
     if (after === 'orbit') this.emit('orbit', 'Orbit achieved');
     else if (after === 'reentry') {
-      this.emit('reentry', s.fuel <= 0 ? 'Out of propellant. No orbit' : 'Ship lost on reentry');
+      this.emit('reentry', LOSS_TEXT[s.loss ?? 'fall']);
     }
   }
 

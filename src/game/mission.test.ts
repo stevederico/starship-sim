@@ -89,6 +89,23 @@ describe('mission', () => {
     assert.equal(mission.score?.catch, 0);
   });
 
+  it('an early cutoff in orbit reaches results in seconds, not minutes', () => {
+    const mission = new Mission();
+    mission.autopilot = true;
+    mission.start(6);
+    let orbitSeconds = 0;
+    const result = run(mission, (m) => {
+      if (m.phase !== 'orbit') return NO_INPUT;
+      m.autopilot = false;
+      orbitSeconds += FRAME;
+      return { ...NO_INPUT, action: true };
+    });
+    assert.ok(result.events.includes('reentry'));
+    assert.equal(mission.orbit?.loss, 'coast');
+    assert.equal(mission.phase, 'results');
+    assert.ok(orbitSeconds < TIMING.intro + 10 + TIMING.outcome + 1, `orbit phase took ${orbitSeconds}s`);
+  });
+
   it('the action button stages only inside the window', () => {
     const mission = new Mission();
     mission.start(2);

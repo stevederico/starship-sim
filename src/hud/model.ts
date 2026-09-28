@@ -1,7 +1,7 @@
 import { ASCENT, ascentFuelFrac, canStage } from '../game/ascent.ts';
 import { CATCH, burnMargin } from '../game/catch.ts';
 import type { Mission, Phase } from '../game/mission.ts';
-import { ORBIT, orbitFuelFrac } from '../game/orbit.ts';
+import { ORBIT, coastLeft, orbitFuelFrac } from '../game/orbit.ts';
 import { circularSpeed, clamp } from '../game/physics.ts';
 
 export type Tone = 'ok' | 'warn' | 'bad' | 'dim';
@@ -307,7 +307,7 @@ function orbitModel(mission: Mission): HudModel {
     hud.prompt = 'Orbit closed. Cut the engines';
     hud.promptTone = 'ok';
   } else if (s.throttle <= 0 && !closed) {
-    hud.prompt = 'Orbit not closed. Throttle back up';
+    hud.prompt = `Orbit not closed. Relight within ${Math.ceil(coastLeft(s))} s`;
     hud.promptTone = 'bad';
   } else if (s.y < 80_000 && s.vy < 0) {
     hud.prompt = 'Sinking. Pitch up';
