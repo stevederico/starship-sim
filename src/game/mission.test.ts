@@ -107,6 +107,16 @@ describe('mission', () => {
     assert.ok(orbitSeconds < TIMING.intro + 10 + TIMING.outcome + 1, `orbit phase took ${orbitSeconds}s`);
   });
 
+  it('throttle keys work during the countdown', () => {
+    const mission = new Mission();
+    mission.start(1);
+    for (let t = 0; t < 1; t += FRAME) mission.update(FRAME, { ...NO_INPUT, throttleRate: -1 });
+    assert.equal(mission.phase, 'countdown');
+    assert.ok(mission.ascent.throttle < 0.2, `throttle ${mission.ascent.throttle}`);
+    mission.update(FRAME, { ...NO_INPUT, throttleSet: 1 });
+    assert.equal(mission.ascent.throttle, 1);
+  });
+
   it('the action button stages only inside the window', () => {
     const mission = new Mission();
     mission.start(2);

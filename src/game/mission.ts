@@ -154,6 +154,8 @@ export class Mission {
 
     switch (this.phase) {
       case 'countdown':
+        // Throttle is live on the pad, so the player can set it before liftoff.
+        if (!this.autopilot) this.ascent.throttle = this.applyThrottle(this.ascent.throttle, input, dt);
         this.updateCountdown();
         break;
       case 'ascent':

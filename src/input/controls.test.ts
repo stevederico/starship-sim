@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { Controls, buttonOwnsKey, keyCode } from './controls.ts';
+import { Controls, TOUCH_STEER, buttonOwnsKey, keyCode } from './controls.ts';
 import type { KeyEventLike } from './controls.ts';
 
 function press(code: string, target: unknown): KeyEventLike & { prevented: boolean } {
@@ -23,10 +23,11 @@ function press(code: string, target: unknown): KeyEventLike & { prevented: boole
 describe('controls', () => {
   it('touch steering and throttle reach the input', () => {
     const controls = new Controls();
-    controls.setSteer(-1);
+    controls.holdSteer(1, -1);
     controls.setThrottle(0.4);
     const input = controls.read();
-    assert.equal(input.steer, -1);
+    assert.equal(input.steer, -TOUCH_STEER);
+    assert.ok(TOUCH_STEER < 1, 'touch steers softer than a key');
     assert.equal(input.throttleSet, 0.4);
     assert.equal(input.action, false);
   });
@@ -84,9 +85,20 @@ describe('controls', () => {
     assert.equal(buttonOwnsKey(null), false);
   });
 
+  it('releasing one of two held steer buttons keeps the other steering', () => {
+    const controls = new Controls();
+    controls.holdSteer(1, -1);
+    controls.holdSteer(2, 1);
+    assert.equal(controls.read().steer, 0);
+    controls.releaseSteer(2);
+    assert.equal(controls.read().steer, -TOUCH_STEER);
+    controls.releaseSteer(1);
+    assert.equal(controls.read().steer, 0);
+  });
+
   it('release drops held steering', () => {
     const controls = new Controls();
-    controls.setSteer(1);
+    controls.holdSteer(1, 1);
     controls.release();
     assert.equal(controls.read().steer, 0);
   });

@@ -9,6 +9,9 @@ const THROTTLE_UP = new Set(['KeyW', 'ArrowUp']);
 const THROTTLE_DOWN = new Set(['KeyS', 'ArrowDown']);
 const ACTION = new Set(['Space', 'Enter']);
 
+/** Touch steering is gentler than a key: thumbs overshoot. */
+export const TOUCH_STEER = 0.6;
+
 interface KeyLike {
   code: string;
   key: string;
@@ -56,7 +59,8 @@ export class Controls {
   onMute: Listener | null = null;
 
   private held = new Set<string>();
-  private touchSteer = 0;
+  /** Pointer id to steer direction, one entry per finger on a steer button. */
+  private touchSteer = new Map<number, number>();
   private throttleSet: number | null = null;
   private actionEdge = false;
 
@@ -77,13 +81,18 @@ export class Controls {
   /** Drop everything held, for pause and focus loss. */
   release(): void {
     this.held.clear();
-    this.touchSteer = 0;
+    this.touchSteer.clear();
     this.throttleSet = null;
     this.actionEdge = false;
   }
 
-  setSteer(value: number): void {
-    this.touchSteer = clamp(value, -1, 1);
+  /** A finger went down on a steer button. Each finger is tracked on its own. */
+  holdSteer(pointerId: number, direction: -1 | 1): void {
+    this.touchSteer.set(pointerId, direction);
+  }
+
+  releaseSteer(pointerId: number): void {
+    this.touchSteer.delete(pointerId);
   }
 
   setThrottle(value: number): void {
@@ -97,7 +106,9 @@ export class Controls {
 
   /** Builds this frame's input and clears one-shot presses. */
   read(): FlightInput {
-    let steer = this.touchSteer;
+    let touch = 0;
+    for (const direction of this.touchSteer.values()) touch += direction;
+    let steer = clamp(touch, -1, 1) * TOUCH_STEER;
     if (this.anyHeld(STEER_LEFT)) steer -= 1;
     if (this.anyHeld(STEER_RIGHT)) steer += 1;
     let throttleRate = 0;

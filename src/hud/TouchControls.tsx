@@ -22,10 +22,11 @@ function SteerButton({
       className="pointer-events-auto flex size-16 touch-none items-center justify-center border border-foreground/30 bg-panel text-foreground select-none active:bg-accent/30"
       onPointerDown={(event) => {
         event.currentTarget.setPointerCapture(event.pointerId);
-        controls.setSteer(direction);
+        controls.holdSteer(event.pointerId, direction);
       }}
-      onPointerUp={() => controls.setSteer(0)}
-      onPointerCancel={() => controls.setSteer(0)}
+      onPointerUp={(event) => controls.releaseSteer(event.pointerId)}
+      onPointerCancel={(event) => controls.releaseSteer(event.pointerId)}
+      onLostPointerCapture={(event) => controls.releaseSteer(event.pointerId)}
       onContextMenu={(event) => event.preventDefault()}
     >
       <svg viewBox="0 0 24 24" className="size-7" aria-hidden="true">
