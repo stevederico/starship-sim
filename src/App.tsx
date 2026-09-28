@@ -2,6 +2,7 @@ import { ACESFilmicToneMapping, Color } from 'three';
 import { Canvas, useThree } from '@react-three/fiber';
 import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Sound } from './audio/sound.ts';
+import { SHIP_CENTER_Z } from './constants.ts';
 import { Mission } from './game/mission.ts';
 import type { MissionEvent, Phase } from './game/mission.ts';
 import FlightHud from './hud/FlightHud.tsx';
@@ -24,6 +25,8 @@ type ViewKind = 'title' | 'launch' | 'catch' | 'orbit';
 const BEST_KEY = 'steel-ascent-best';
 const MUTE_KEY = 'steel-ascent-muted';
 const TITLE_CAMERA: [number, number, number] = [125, 35, 86];
+/** Orbit target of the title scene. */
+const TITLE_TARGET: [number, number, number] = [0, 1, SHIP_CENTER_Z - 6];
 
 function readStore(key: string): string | null {
   try {
@@ -64,12 +67,18 @@ function bannerTone(event: MissionEvent): Banner['tone'] {
   return 'info';
 }
 
-/** Puts the camera back where the title scene expects it. */
+/** Puts the camera back for the title scene, further out on narrow screens. */
 function TitleCamera() {
   const camera = useThree((state) => state.camera);
+  const aspect = useThree((state) => state.size.width / state.size.height);
   useLayoutEffect(() => {
-    camera.position.set(...TITLE_CAMERA);
-  }, [camera]);
+    const reach = Math.min(3, Math.max(1, 1.25 / aspect));
+    camera.position.set(
+      TITLE_TARGET[0] + (TITLE_CAMERA[0] - TITLE_TARGET[0]) * reach,
+      TITLE_TARGET[1] + (TITLE_CAMERA[1] - TITLE_TARGET[1]) * reach,
+      TITLE_TARGET[2] + (TITLE_CAMERA[2] - TITLE_TARGET[2]) * reach
+    );
+  }, [camera, aspect]);
   return null;
 }
 
@@ -315,18 +324,13 @@ export default function App() {
           mission={mission}
           controls={controls}
           banner={banner}
+          demo={demo}
           touch={touch}
           paused={paused}
           muted={muted}
           onPause={togglePause}
           onMute={toggleMute}
         />
-      ) : null}
-
-      {demo && flying ? (
-        <p className="pointer-events-none absolute inset-x-0 top-20 z-10 text-center font-mono text-[10px] tracking-[0.22em] text-hot uppercase">
-          Demo flight · Guidance is flying
-        </p>
       ) : null}
 
       {paused ? (

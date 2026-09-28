@@ -333,7 +333,9 @@ export class Mission {
 
     const after = statusOf(s);
     if (after === 'orbit') this.emit('orbit', 'Orbit achieved');
-    else if (after === 'reentry') this.emit('reentry', 'Ship lost on reentry');
+    else if (after === 'reentry') {
+      this.emit('reentry', s.fuel <= 0 ? 'Out of propellant. No orbit' : 'Ship lost on reentry');
+    }
   }
 
   record(): MissionRecord {

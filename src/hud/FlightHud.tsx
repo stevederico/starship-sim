@@ -16,6 +16,8 @@ interface FlightHudProps {
   mission: Mission;
   controls: Controls;
   banner: Banner | null;
+  /** True while guidance flies the mission for the player. */
+  demo: boolean;
   touch: boolean;
   paused: boolean;
   muted: boolean;
@@ -75,6 +77,7 @@ export default function FlightHud({
   mission,
   controls,
   banner,
+  demo,
   touch,
   paused,
   muted,
@@ -114,6 +117,11 @@ export default function FlightHud({
       </header>
 
       <div className="flex flex-1 flex-col items-center justify-start gap-3 pt-3">
+        {demo ? (
+          <p className="font-mono text-[10px] tracking-[0.22em] text-hot uppercase">
+            Demo flight · Guidance is flying
+          </p>
+        ) : null}
         {banner ? (
           <p
             key={banner.id}

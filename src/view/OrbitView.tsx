@@ -32,7 +32,7 @@ export default function OrbitView({ mission, maps }: ViewProps) {
     const f = fx.current;
     const running = s.status === 'flying' && !mission.inIntro;
     const inOrbit = s.status === 'orbit';
-    const lost = s.status === 'reentry';
+    const lost = s.status === 'reentry' && s.y < 110_000;
 
     const lit = running && s.throttle > 0 && s.fuel > 0;
     if (lit !== burning) setBurning(lit);
@@ -83,9 +83,9 @@ export default function OrbitView({ mission, maps }: ViewProps) {
 
     const aspect = size.width / size.height;
     const away = inOrbit ? Math.min(mission.outcomeTime, 4) : 0;
-    const distance = Math.max(128, 84 / (VIEW_SPAN * aspect)) * (1 + away * 0.05);
+    const distance = Math.max(142, 84 / (VIEW_SPAN * aspect)) * (1 + away * 0.05);
     camera.position.set(-16 + away * 9 + f.shakeX, 15 + away * 3 + f.shakeY, distance);
-    camera.lookAt(6, -14, 0);
+    camera.lookAt(6, -12, 0);
   });
 
   return (

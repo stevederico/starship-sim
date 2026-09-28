@@ -2,13 +2,15 @@ import { useLayoutEffect } from 'react';
 import { useTexture } from '@react-three/drei';
 import { RepeatWrapping, SRGBColorSpace } from 'three';
 
+const BASE = import.meta.env.BASE_URL;
+
 const ASSETS = {
-  steel: '/assets/steel.webp',
-  tiles: '/assets/tiles.webp',
-  earth: '/assets/earth-day.jpg',
-  space: '/assets/space-equirect.webp',
-  plume: '/assets/plume.webp'
-} as const;
+  steel: `${BASE}assets/steel.webp`,
+  tiles: `${BASE}assets/tiles.webp`,
+  earth: `${BASE}assets/earth-day.jpg`,
+  space: `${BASE}assets/space-equirect.webp`,
+  plume: `${BASE}assets/plume.webp`
+};
 
 /** Loads Grok + NASA maps and sets wrap / color space. */
 export function useShipTextures() {
