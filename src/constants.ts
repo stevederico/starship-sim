@@ -1,4 +1,4 @@
-/** Block 2 Starship, meters. Wikipedia / SpaceX public figures. */
+/** Upper stage dimensions, meters, from public figures. */
 export const SHIP_HEIGHT = 52.1;
 export const SHIP_RADIUS = 4.5;
 export const RING_HEIGHT = 1.83;

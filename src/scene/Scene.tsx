@@ -2,7 +2,7 @@ import { OrbitControls } from '@react-three/drei';
 import { SHIP_CENTER_Z } from '../constants.ts';
 import Earth from './Earth.tsx';
 import SpaceRig from './SpaceRig.tsx';
-import Starship from './Starship.tsx';
+import Ship from './Ship.tsx';
 import { useShipTextures } from './useShipTextures.ts';
 
 interface SceneProps {
@@ -22,7 +22,7 @@ export default function Scene({ isBurning }: SceneProps) {
       <directionalLight position={[-40, 20, -20]} intensity={0.7} color="#8fb4ff" />
       <Earth map={maps.earth} />
       <group rotation={[Math.PI / 2, 0, 0.22]}>
-        <Starship
+        <Ship
           steelMap={maps.steel}
           tilesMap={maps.tiles}
           plumeMap={maps.plume}

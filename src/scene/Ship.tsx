@@ -6,15 +6,15 @@ import { hullProfile } from './hullProfile.ts';
 import EngineCluster from './EngineCluster.tsx';
 import Flaps from './Flaps.tsx';
 
-interface StarshipProps {
+interface ShipProps {
   steelMap: Texture;
   tilesMap: Texture;
   plumeMap: Texture;
   isBurning: boolean;
 }
 
-/** Block 2 ship: 9 m stainless barrel, windward tiles, 3+3 Raptors. */
-export default function Starship({ steelMap, tilesMap, plumeMap, isBurning }: StarshipProps) {
+/** Upper stage: 9 m stainless barrel, windward tiles, three sea-level and three vacuum engines. */
+export default function Ship({ steelMap, tilesMap, plumeMap, isBurning }: ShipProps) {
   const points = useMemo(() => hullProfile(), []);
   const hullGeo = useMemo(() => new LatheGeometry(points, 72), [points]);
   const tileGeo = useMemo(

@@ -4,7 +4,7 @@ import type { Group } from 'three';
 import { ASCENT } from '../game/ascent.ts';
 import { TIMING } from '../game/mission.ts';
 import { airDensity, clamp } from '../game/physics.ts';
-import Starship from '../scene/Starship.tsx';
+import Ship from '../scene/Ship.tsx';
 import { createAtmosphere, updateAtmosphere } from './atmosphere.ts';
 import Booster, { BOOSTER } from './Booster.tsx';
 import Clouds from './Clouds.tsx';
@@ -183,7 +183,7 @@ export default function LaunchView({ mission, maps }: ViewProps) {
           <Exhaust ref={exhaust} radius={4.2} length={95} />
         </group>
         <group ref={ship} position={[0, BOOSTER.topY - PIVOT, 0]} rotation={[0, -Math.PI / 2, 0]}>
-          <Starship
+          <Ship
             steelMap={maps.steel}
             tilesMap={maps.tiles}
             plumeMap={maps.plume}

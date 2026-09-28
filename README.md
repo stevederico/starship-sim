@@ -1,5 +1,7 @@
 # Steel Ascent
 
+Unofficial fan game. Not affiliated with any launch company.
+
 Fly a two-stage steel rocket from the pad to orbit. Throttle back through max-Q, stage at the right moment, fly the booster back into the tower arms, then burn the ship to a 150 km orbit. You're scored on fuel, accuracy and the catch.
 
 Runs in the browser, on desktop and phone. You don't need to log in, and there's no backend and no API keys.
@@ -10,7 +12,7 @@ Runs in the browser, on desktop and phone. You don't need to log in, and there's
 
 1. **Ascent.** Follow the pitch marker. Ease the throttle when the air load climbs, or the airframe tears apart.
 2. **Staging.** The window opens at 25% booster fuel. The best score comes near 10%. Any fuel you save becomes landing fuel.
-3. **Catch.** The booster comes back through a crosswind. Light the engines in time, then steer into the green ring between the arms, slow and upright.
+3. **Catch.** The booster comes back through a crosswind. Light the engines in time, hold the target descent speed, then steer into the green ring between the arms, slow and upright.
 4. **Orbit.** Follow the marker to build speed, then cut the engines when the orbit closes. Time slows down near cutoff so the call is fair.
 
 Losing the booster doesn't end the run. The ship still flies to orbit.
@@ -26,7 +28,7 @@ Losing the booster doesn't end the run. The ship still flies to orbit.
 | Pause | P or Esc | Pause button |
 | Mute | M | Speaker button |
 
-On the attitude dial, the white needle is the vehicle and the chevron is the guidance cue: green means on target. The blue tick on the throttle bar is the suggested setting.
+On the attitude dial, the white needle is the vehicle and the chevron is the guidance cue: green means on target. The blue tick on the throttle bar suggests a setting until you pass max-Q. After that the throttle is up to you.
 
 To watch guidance fly a full mission, use **Watch a demo flight** on the title screen, or open `?demo=1`.
 
@@ -38,7 +40,7 @@ The maximum is 10,000:
 - **Accuracy (3,000):** guidance tracking, airframe health through max-Q, staging timing, closeness to a circular 150 km orbit
 - **Catch (4,000):** 2,000 for a catch, plus up to 2,000 for how centered, slow and upright it was
 
-Ranks run S, A, B, C, D, F. Your best score is saved in the browser.
+Ranks run S, A, B, C, D, F. A clean first flight can reach A. Guidance flying alone lands around 8,800, so S (9,100) means beating it. Your best score is saved in the browser.
 
 ## Run
 
@@ -75,7 +77,7 @@ bun run build      # static site in dist/
   - The tower, booster, exhaust and smoke are generated in code.
   - The ship and Earth reuse the original orbital viewer.
 - **`src/audio/`:** all sound is synthesized with WebAudio, with no sample files.
-- **`public/assets/`:** textures are listed in [public/assets/ASSETS.md](public/assets/ASSETS.md).
+- **`public/assets/`:** textures are listed in [docs/ASSETS.md](docs/ASSETS.md).
 
 ## License
 

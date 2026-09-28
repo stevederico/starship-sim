@@ -100,7 +100,7 @@ function Bell({ spec, plumeMap, isBurning }: { spec: BellSpec; plumeMap: Texture
   );
 }
 
-/** Three sea-level Raptors + three vacuum bells. */
+/** Three sea-level engines + three vacuum bells. */
 export default function EngineCluster({ plumeMap, isBurning }: EngineClusterProps) {
   return (
     <group>

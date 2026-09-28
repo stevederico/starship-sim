@@ -6,7 +6,7 @@ import { EARTH_RADIUS, SHIP_HEIGHT } from '../constants.ts';
 import { orbitWarp } from '../game/orbit.ts';
 import { EARTH_RADIUS_M, clamp } from '../game/physics.ts';
 import SpaceRig from '../scene/SpaceRig.tsx';
-import Starship from '../scene/Starship.tsx';
+import Ship from '../scene/Ship.tsx';
 import { VIEW_SPAN, ease, useCameraRange, useParticles } from './shared.ts';
 import type { ViewProps } from './shared.ts';
 
@@ -115,7 +115,7 @@ export default function OrbitView({ mission, maps }: ViewProps) {
       </group>
       <group ref={ship}>
         <group position={[0, -SHIP_HEIGHT / 2, 0]} rotation={[0, -Math.PI / 2, 0]}>
-          <Starship
+          <Ship
             steelMap={maps.steel}
             tilesMap={maps.tiles}
             plumeMap={maps.plume}
