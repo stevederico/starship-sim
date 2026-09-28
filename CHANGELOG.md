@@ -8,6 +8,7 @@
   Fix two-finger steering
   Rename trademark names
   Add social card
+  Rename to Starship Simulator
 
 0.2.0
 

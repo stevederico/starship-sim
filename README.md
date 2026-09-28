@@ -1,4 +1,4 @@
-# Steel Ascent
+# Starship Simulator
 
 Unofficial fan game. Not affiliated with any launch company.
 

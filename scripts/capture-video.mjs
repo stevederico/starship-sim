@@ -10,9 +10,9 @@ import { join } from 'node:path';
 
 const FPS = 30;
 const port = process.env.PORT ?? '5173';
-const out = process.argv[2] ?? 'media/steel-ascent-phone.mp4';
+const out = process.argv[2] ?? 'media/starship-sim-phone.mp4';
 const frames = 'media/frames';
-const env = { ...process.env, AGENT_BROWSER_SESSION: process.env.AGENT_BROWSER_SESSION ?? 'steel-ascent' };
+const env = { ...process.env, AGENT_BROWSER_SESSION: process.env.AGENT_BROWSER_SESSION ?? 'starship-sim' };
 
 const run = (...args) => execFileSync('agent-browser', args, { env, encoding: 'utf8' }).trim();
 const evalJs = (js) => JSON.parse(JSON.parse(run('eval', js).split('\n').pop()));

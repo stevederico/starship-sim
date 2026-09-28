@@ -21,7 +21,7 @@ export default function TitleScreen({ best, touch, onLaunch, onDemo }: TitleScre
           Launch · Catch · Orbit
         </p>
         <h1 className="mt-2 font-mono text-4xl font-medium tracking-tight text-balance uppercase sm:text-6xl">
-          Steel Ascent
+          Starship Simulator
         </h1>
         <p className="mt-3 max-w-md text-sm text-pretty text-muted sm:text-base">
           Fly a full stack off the pad, catch the booster with the tower arms and put the ship

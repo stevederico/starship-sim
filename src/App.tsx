@@ -22,8 +22,13 @@ import { FOV } from './view/shared.ts';
 
 type ViewKind = 'title' | 'launch' | 'catch' | 'orbit';
 
-const BEST_KEY = 'steel-ascent-best';
-const MUTE_KEY = 'steel-ascent-muted';
+const BEST_KEY = 'starship-sim-best';
+const MUTE_KEY = 'starship-sim-muted';
+/** Keys used by 0.2.0. Read once so players keep their best score and mute setting. */
+const LEGACY_KEYS: [string, string][] = [
+  ['steel-ascent-best', BEST_KEY],
+  ['steel-ascent-muted', MUTE_KEY]
+];
 const TITLE_CAMERA: [number, number, number] = [125, 35, 86];
 /** Orbit target of the title scene. */
 const TITLE_TARGET: [number, number, number] = [0, 1, SHIP_CENTER_Z - 6];
@@ -43,6 +48,22 @@ function writeStore(key: string, value: string): void {
     // Private mode: the score just does not persist.
   }
 }
+
+/** Copies 0.2.0 settings to the current keys once, then drops the old ones. */
+function migrateStore(): void {
+  for (const [from, to] of LEGACY_KEYS) {
+    const old = readStore(from);
+    if (old === null) continue;
+    if (readStore(to) === null) writeStore(to, old);
+    try {
+      window.localStorage.removeItem(from);
+    } catch {
+      // Storage blocked: nothing to clean up.
+    }
+  }
+}
+
+migrateStore();
 
 function viewFor(phase: Phase, current: ViewKind): ViewKind {
   switch (phase) {

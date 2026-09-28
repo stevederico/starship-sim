@@ -14,10 +14,10 @@ import { join } from 'node:path';
 const [prefix, query, shotsJson, chunkArg] = process.argv.slice(2);
 const shots = JSON.parse(shotsJson);
 const chunk = Number(chunkArg ?? 0.5);
-const env = { ...process.env, AGENT_BROWSER_SESSION: 'steel-ascent' };
+const env = { ...process.env, AGENT_BROWSER_SESSION: 'starship-sim' };
 const dir = process.env.SHOT_DIR ?? new URL('../docs/screenshots/', import.meta.url).pathname;
 const port = process.env.PORT ?? '5173';
-const warmup = join(tmpdir(), 'steel-ascent-warmup.png');
+const warmup = join(tmpdir(), 'starship-sim-warmup.png');
 const run = (...args) => {
   try { return execFileSync('agent-browser', args, { env, encoding: 'utf8' }).trim(); } catch (e) { return `ERR ${e.stdout || e.message}`; }
 };
