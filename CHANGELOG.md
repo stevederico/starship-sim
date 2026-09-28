@@ -1,3 +1,14 @@
+0.3.0
+
+  Fix HUD key focus
+  Suspend hidden audio
+  End open-orbit coasts
+  Raise difficulty
+  Add safe-area padding
+  Fix two-finger steering
+  Rename trademark names
+  Add social card
+
 0.2.0
 
   Add launch game

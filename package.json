@@ -1,7 +1,7 @@
 {
   "name": "steel-ascent",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Steel Ascent: launch, catch the booster, reach orbit. Browser game.",
   "license": "MIT",
   "type": "module",
