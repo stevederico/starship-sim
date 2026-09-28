@@ -25,7 +25,9 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const probe = (step) => `(()=>{${step > 0 ? `window.__step(${step});` : ''}const m=window.__game.mission;const s=m.phase==='catch'?m.catch:m.phase==='orbit'?m.orbit:m.ascent;return JSON.stringify({phase:m.phase,pt:+m.phaseTime.toFixed(2),status:s&&s.status,y:s&&Math.round(s.y),x:s&&Math.round(s.x),thr:s&&+s.throttle.toFixed(2),ang:s&&+(s.angle*57.3).toFixed(1),score:m.score&&m.score.total})})()`;
 const read = (out) => { try { return JSON.parse(JSON.parse(out.split('\n').pop())); } catch { return { raw: out }; } };
 
-run('open', `http://127.0.0.1:${port}/?step=1&${query}`);
+const url = `http://127.0.0.1:${port}/?step=1&${query}`;
+// A session whose pinned tab was closed needs a fresh tab.
+if (run('open', url).includes('tab_gone')) run('tab', 'new', url);
 await sleep(2500);
 let waited = 0;
 while (run('eval', 'typeof window.__step') !== '"function"' && waited++ < 20) {
