@@ -16,7 +16,9 @@ function SteerButton({
   return (
     <button
       type="button"
+      data-hud
       aria-label={label}
+      onMouseDown={(event) => event.preventDefault()}
       className="pointer-events-auto flex size-16 touch-none items-center justify-center border border-foreground/30 bg-panel text-foreground select-none active:bg-accent/30"
       onPointerDown={(event) => {
         event.currentTarget.setPointerCapture(event.pointerId);

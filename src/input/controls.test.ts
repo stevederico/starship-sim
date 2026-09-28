@@ -1,6 +1,24 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { Controls, keyCode } from './controls.ts';
+import { Controls, buttonOwnsKey, keyCode } from './controls.ts';
+import type { KeyEventLike } from './controls.ts';
+
+function press(code: string, target: unknown): KeyEventLike & { prevented: boolean } {
+  const event = {
+    code,
+    key: '',
+    target: target as EventTarget,
+    repeat: false,
+    metaKey: false,
+    ctrlKey: false,
+    altKey: false,
+    prevented: false,
+    preventDefault() {
+      event.prevented = true;
+    }
+  };
+  return event;
+}
 
 describe('controls', () => {
   it('touch steering and throttle reach the input', () => {
@@ -36,6 +54,34 @@ describe('controls', () => {
     assert.equal(keyCode({ code: '', key: 'D' }), 'KeyD');
     assert.equal(keyCode({ code: '', key: ' ' }), 'Space');
     assert.equal(keyCode({ code: '', key: 'ArrowLeft' }), 'ArrowLeft');
+  });
+
+  it('space after clicking a HUD button still stages', () => {
+    const controls = new Controls();
+    let actions = 0;
+    controls.onAction = () => {
+      actions += 1;
+    };
+    const mute = { tagName: 'BUTTON', dataset: { hud: '' } };
+    const event = press('Space', mute);
+    controls.keyDown(event);
+    assert.equal(actions, 1);
+    assert.equal(event.prevented, true);
+    assert.equal(controls.read().action, true);
+  });
+
+  it('a focused plain button keeps its own space and enter', () => {
+    const controls = new Controls();
+    let actions = 0;
+    controls.onAction = () => {
+      actions += 1;
+    };
+    const launch = { tagName: 'BUTTON', dataset: {} };
+    controls.keyDown(press('Enter', launch));
+    assert.equal(actions, 0);
+    assert.equal(buttonOwnsKey(launch as unknown as EventTarget), true);
+    assert.equal(buttonOwnsKey({ tagName: 'DIV' } as unknown as EventTarget), false);
+    assert.equal(buttonOwnsKey(null), false);
   });
 
   it('release drops held steering', () => {

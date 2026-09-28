@@ -31,6 +31,11 @@ const BANNER_TONE: Record<Banner['tone'], string> = {
   info: 'border-accent/50 text-accent'
 };
 
+/** Clicking a HUD button must not move keyboard focus onto it. */
+export function keepFocus(event: React.MouseEvent): void {
+  event.preventDefault();
+}
+
 /** Re-reads the mission about 20 times a second. The sim itself runs per frame. */
 function useHud(mission: Mission): HudModel {
   const [hud, setHud] = useState(() => hudModel(mission));
@@ -60,8 +65,10 @@ function IconButton({
   return (
     <button
       type="button"
+      data-hud
       aria-label={label}
       aria-pressed={pressed}
+      onMouseDown={keepFocus}
       onClick={onClick}
       className="pointer-events-auto flex size-11 items-center justify-center border border-foreground/25 bg-panel text-foreground hover:bg-foreground/10"
     >
@@ -171,7 +178,9 @@ export default function FlightHud({
               {hud.actionLabel ? (
                 <button
                   type="button"
+                  data-hud
                   disabled={!hud.actionReady}
+                  onMouseDown={keepFocus}
                   onClick={() => controls.pressAction()}
                   className="pointer-events-auto min-h-12 min-w-24 border border-hot bg-hot/20 px-4 font-mono text-sm tracking-[0.18em] text-foreground uppercase hover:bg-hot/40 disabled:border-foreground/20 disabled:bg-panel disabled:text-muted"
                 >

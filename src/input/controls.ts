@@ -23,6 +23,32 @@ export function keyCode(event: KeyLike): string {
   return key;
 }
 
+/** Minimal shape of a key event, so tests can drive the handler without a DOM. */
+export interface KeyEventLike extends KeyLike {
+  target: EventTarget | null;
+  repeat: boolean;
+  metaKey: boolean;
+  ctrlKey: boolean;
+  altKey: boolean;
+  preventDefault: () => void;
+}
+
+interface ElementLike {
+  tagName?: string;
+  dataset?: Record<string, string | undefined>;
+}
+
+/**
+ * A focused plain button keeps its own Space and Enter. HUD buttons carry
+ * data-hud: they never own those keys, so a click on Mute or Pause cannot
+ * steal the stage or cutoff key afterwards.
+ */
+export function buttonOwnsKey(target: EventTarget | null): boolean {
+  const el = target as ElementLike | null;
+  if (!el || el.tagName !== 'BUTTON') return false;
+  return el.dataset?.hud === undefined;
+}
+
 /** Keyboard and touch state, read once per frame by the game loop. */
 export class Controls {
   onAction: Listener | null = null;
@@ -94,15 +120,12 @@ export class Controls {
     return false;
   }
 
-  private keyDown(event: KeyboardEvent): void {
+  keyDown(event: KeyEventLike): void {
     if (event.metaKey || event.ctrlKey || event.altKey) return;
-    const target = event.target;
-    const onButton = target instanceof HTMLElement && target.tagName === 'BUTTON';
     const code = keyCode(event);
 
     if (ACTION.has(code)) {
-      // A focused button already handles its own Space and Enter.
-      if (onButton) return;
+      if (buttonOwnsKey(event.target)) return;
       event.preventDefault();
       if (!event.repeat) this.pressAction();
       return;
