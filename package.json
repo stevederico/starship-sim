@@ -1,7 +1,9 @@
 {
   "name": "starship-sim",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
+  "description": "Steel Ascent: launch, catch the booster, reach orbit. Browser game.",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "vite",
