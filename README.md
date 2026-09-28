@@ -51,6 +51,8 @@ bun run build      # static site in dist/
 
 `dist/` uses relative paths, so it works from any host or sub-path.
 
+`scripts/play-browser.mjs` replays a demo flight in a browser through [agent-browser](https://github.com/vercel-labs/agent-browser) and saves screenshots.
+
 ## Screenshots
 
 | | |
