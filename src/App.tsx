@@ -343,7 +343,7 @@ export default function App() {
       ) : null}
 
       {paused ? (
-        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 bg-background/70">
+        <div className="safe-pad absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 bg-background/70">
           <h2 className="font-mono text-2xl tracking-[0.2em] uppercase">Paused</h2>
           <div className="flex gap-2">
             <button

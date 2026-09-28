@@ -43,7 +43,7 @@ export default function ResultsScreen({
 }: ResultsScreenProps) {
   const complete = score.caught && score.inOrbit;
   return (
-    <div className="absolute inset-0 z-20 flex items-center justify-center overflow-y-auto bg-background/70 p-4">
+    <div className="absolute inset-0 z-20 flex items-center justify-center safe-pad overflow-y-auto bg-background/70">
       <section
         aria-labelledby="results-title"
         className="flex w-full max-w-lg flex-col gap-4 border border-foreground/20 bg-background/90 p-5 sm:p-7"

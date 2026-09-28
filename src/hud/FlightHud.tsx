@@ -95,14 +95,14 @@ export default function FlightHud({
   const showControls = hud.flying || hud.phase === 'countdown';
 
   return (
-    <div className="pointer-events-none absolute inset-0 z-10 flex flex-col justify-between p-3 sm:p-5">
+    <div className="pointer-events-none safe-pad absolute inset-0 z-10 flex flex-col justify-between">
       <header className="flex items-start justify-between gap-3">
         <div className="flex flex-col gap-2">
-          <div>
-            <p className="font-mono text-[10px] tracking-[0.22em] text-accent uppercase">
+          <div className="self-start bg-panel px-3 py-2">
+            <p className="font-mono text-[11px] tracking-[0.2em] text-foreground uppercase">
               {hud.phaseLabel}
             </p>
-            <p className="mt-0.5 font-mono text-lg text-foreground tabular-nums">{hud.clock}</p>
+            <p className="mt-0.5 font-mono text-lg text-accent tabular-nums">{hud.clock}</p>
           </div>
           {hud.readouts.length > 0 ? (
             <div className="grid grid-cols-3 gap-x-4 gap-y-2 bg-panel px-3 py-2 sm:flex sm:gap-6 sm:px-4 sm:py-3">

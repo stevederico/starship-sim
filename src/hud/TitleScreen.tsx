@@ -15,7 +15,7 @@ const STEPS = [
 /** First screen: name, goal, controls and the launch button. */
 export default function TitleScreen({ best, touch, onLaunch, onDemo }: TitleScreenProps) {
   return (
-    <div className="pointer-events-none absolute inset-0 z-10 flex flex-col justify-between overflow-y-auto p-5 sm:p-8">
+    <div className="pointer-events-none absolute inset-0 z-10 flex flex-col justify-between safe-pad safe-pad-wide overflow-y-auto">
       <header>
         <p className="font-mono text-[10px] tracking-[0.22em] text-accent uppercase">
           Launch · Catch · Orbit

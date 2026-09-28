@@ -32,6 +32,27 @@ body {
   -webkit-touch-callout: none;
 }
 
+/* Keeps overlays clear of notches, rounded corners and the home bar. */
+.safe-pad {
+  --pad: 0.75rem;
+  padding: max(var(--pad), env(safe-area-inset-top)) max(var(--pad), env(safe-area-inset-right))
+    max(var(--pad), env(safe-area-inset-bottom)) max(var(--pad), env(safe-area-inset-left));
+}
+
+.safe-pad-wide {
+  --pad: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .safe-pad {
+    --pad: 1.25rem;
+  }
+
+  .safe-pad-wide {
+    --pad: 2rem;
+  }
+}
+
 .banner {
   animation: banner 2.8s ease-out forwards;
 }
